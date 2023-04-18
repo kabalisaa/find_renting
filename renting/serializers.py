@@ -1,84 +1,89 @@
 from rest_framework import serializers
 from .models import Province, District, Sector, Cell, Manager, Landlord, PropertyType, Property, PropertyImages, PublishingPayment, GetInTouch, Testimonial
 
-class ProvinceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Province
-        fields = '__all__'
 
-
-class DistrictSerializer(serializers.ModelSerializer):
-    province = ProvinceSerializer()
-    class Meta:
-        model = District
-        fields = '__all__'
-
-
-class SectorSerializer(serializers.ModelSerializer):
-    district = DistrictSerializer()
-    class Meta:
-        model = Sector
-        fields = '__all__'
 
 
 class CellSerializer(serializers.ModelSerializer):
-    sector = SectorSerializer()
+    sector = serializers.StringRelatedField()
     class Meta:
         model = Cell
-        fields = '__all__'
+        fields = ['sector','cell_name']
 
+
+class SectorSerializer(serializers.ModelSerializer):
+    district = serializers.StringRelatedField()
+    cells=CellSerializer(many=True)
+    class Meta:
+        model = Sector
+        fields = ['district','sector_name','cells']
+
+
+class DistrictSerializer(serializers.ModelSerializer):
+    province = serializers.StringRelatedField()
+    sectors=SectorSerializer(many=True)
+    class Meta:
+        model = District
+        fields = ['__all__']
+
+
+class ProvinceSerializer(serializers.ModelSerializer):
+    districts=DistrictSerializer(many=True)
+    class Meta:
+        model = Province
+        fields = ['province_name', 'districts',]
 
 class ManagerSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()
-    province = ProvinceSerializer()
-    district = DistrictSerializer()
-    sector = SectorSerializer()
+    province = serializers.StringRelatedField()
+    district = serializers.StringRelatedField()
+    sector = serializers.StringRelatedField()
     class Meta:
         model = Manager
-        fields = '__all__'
-
-
-class LandlordSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField()
-    province = ProvinceSerializer()
-    district = DistrictSerializer()
-    sector = SectorSerializer()
-    cell = CellSerializer()
-    class Meta:
-        model = Landlord
-        fields = '__all__'
+        fields = ['user','gender','phone_number','province','district','sector','profile_image',]
 
 
 class PropertyTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = PropertyType
-        fields = '__all__'
+        fields = ['type_name',]
 
 
 class PropertyImagesSerializer(serializers.ModelSerializer):
     class Meta:
         model = PropertyImages
-        fields = '__all__'
+        fields = ['property','property_image','images']
 
 
 class PropertySerializer(serializers.ModelSerializer):
     landlord = serializers.StringRelatedField()
-    property_type = PropertyTypeSerializer()
-    province = ProvinceSerializer()
-    district = DistrictSerializer()
-    sector = SectorSerializer()
-    cell = CellSerializer()
+    property_type = serializers.StringRelatedField()
+    province = serializers.StringRelatedField()
+    district = serializers.StringRelatedField()
+    sector = serializers.StringRelatedField()
+    cell = serializers.StringRelatedField()
     images = PropertyImagesSerializer(many=True)
     class Meta:
         model = Property
-        fields = '__all__'
+        fields = ['landlord','property_type','title','description','bedrooms','bathrooms','is_furnished','floors','plot_size','renting_price','status','status','province','district','sector','cell','street','pub_date','created_date','images']
 class PublishingPaymentSerializer(serializers.ModelSerializer):
     landlord = serializers.StringRelatedField()
-    property = PropertySerializer()
+    property = serializers.StringRelatedField()
     class Meta:
         model = PublishingPayment
-        fields = '__all__'
+        fields = ['property','landlord','payment_amount','payment_method','created_date']
 
+class LandlordSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField()
+    province = serializers.StringRelatedField()
+    district = serializers.StringRelatedField()
+    sector = serializers.StringRelatedField()
+    cell =serializers.StringRelatedField()
+    properties=PropertySerializer(many=True)
+    payments=PublishingPaymentSerializer(many=True)
+    class Meta:
+        model = Landlord
+        fields = ["user","gender","phone_number","province","district","sector","cell","profile_image",'properties','payments']
 
 class GetInTouchSerializer(serializers.ModelSerializer):
     class Meta:
