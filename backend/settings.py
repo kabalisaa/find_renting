@@ -28,7 +28,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # ...
     'rest_framework',
+    'rest_framework.authtoken',
     'phonenumber_field',
+    'djoser',
+    'django_filters',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
 
     # local apps
     'users',
@@ -140,5 +145,29 @@ REST_FRAMEWORK = {
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-    ]
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Kigali House Renting API",
+    "DESCRIPTION": "Project Kigali House Renting system is a software application designed to help landlords and tenants in Kigali, the capital city of Rwanda, to efficiently manage their rental properties. The system allows landlords to list their properties for rent, and potential tenants to search for and view available rental properties. It provides a user-friendly interface for both landlords and tenants, allowing them to communicate and negotiate terms of the rental agreement.",
+    "VERSION": "1.0.0",
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+            'value': 'Bearer {token}',
+        }
+    },
+    'SWAGGER_UI_DIST': 'SIDECAR',  # shorthand to use the sidecar instead
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
 }

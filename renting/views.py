@@ -39,7 +39,6 @@ class LandlordViewSet(viewsets.ModelViewSet):
     queryset = Landlord.objects.all()
     serializer_class = LandlordSerializer
     def get_queryset(self):
-        profile = self.request.user.landlords.all()
         return self.queryset.filter(user=self.request.user)
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -61,7 +60,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
     queryset = Property.objects.all()
     serializer_class = PropertySerializer
     def get_queryset(self):
-        return self.queryset.filter(landlord=self.request.user.landlord)
+        return self.queryset.filter(landlord=self.request.user)
     def perform_create(self, serializer):
         serializer.save(landlord=self.request.user.landlord)
     def perform_update(self, serializer):

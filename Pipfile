@@ -14,6 +14,7 @@ markdown = "*"
 django-filter = "*"
 djangorestframework-simplejwt = "*"
 social-auth-app-django = "*"
+drf-spectacular = {extras = ["sidecar"], version = "*"}
 
 [dev-packages]
 
