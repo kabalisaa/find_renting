@@ -8,7 +8,8 @@ class CellSerializer(serializers.ModelSerializer):
     sector = serializers.StringRelatedField()
     class Meta:
         model = Cell
-        fields = ['sector','cell_name']
+        fields = ['id','sector','cell_name']
+        read_only_fields = ['sector']
 
 
 class SectorSerializer(serializers.ModelSerializer):
@@ -16,7 +17,8 @@ class SectorSerializer(serializers.ModelSerializer):
     cells=CellSerializer(many=True)
     class Meta:
         model = Sector
-        fields = ['district','sector_name','cells']
+        fields = ['id','district','sector_name','cells']
+        read_only_fields = ['district']
 
 
 class DistrictSerializer(serializers.ModelSerializer):
@@ -24,14 +26,15 @@ class DistrictSerializer(serializers.ModelSerializer):
     sectors=SectorSerializer(many=True)
     class Meta:
         model = District
-        fields = ['__all__']
+        fields = ['id','province','sectors',]
+        read_only_fields = ['province']
 
 
 class ProvinceSerializer(serializers.ModelSerializer):
     districts=DistrictSerializer(many=True)
     class Meta:
         model = Province
-        fields = ['province_name', 'districts',]
+        fields = ['id','province_name', 'districts',]
 
 class ManagerSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()
@@ -40,19 +43,16 @@ class ManagerSerializer(serializers.ModelSerializer):
     sector = serializers.StringRelatedField()
     class Meta:
         model = Manager
-        fields = ['user','gender','phone_number','province','district','sector','profile_image',]
-
-
-class PropertyTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PropertyType
-        fields = ['type_name',]
+        fields = ['id','user','gender','phone_number','province','district','sector','profile_image',]
+        read_only_fields = ['user']
 
 
 class PropertyImagesSerializer(serializers.ModelSerializer):
+    property = serializers.StringRelatedField()
     class Meta:
         model = PropertyImages
-        fields = ['property','property_image','images']
+        fields = ['id','property','property_image']
+        read_only_fields = ['property']
 
 
 class PropertySerializer(serializers.ModelSerializer):
@@ -65,13 +65,25 @@ class PropertySerializer(serializers.ModelSerializer):
     images = PropertyImagesSerializer(many=True)
     class Meta:
         model = Property
-        fields = ['landlord','property_type','title','description','bedrooms','bathrooms','is_furnished','floors','plot_size','renting_price','status','status','province','district','sector','cell','street','pub_date','created_date','images']
+        fields = ['id','landlord','property_type','title','description','bedrooms','bathrooms','is_furnished','floors','plot_size','renting_price','status','status','province','district','sector','cell','street','pub_date','created_date','images']
+        read_only_fields = ['landlord','pub_date','created_date',]
+
+
+class PropertyTypeSerializer(serializers.ModelSerializer):
+    properties = PropertyImagesSerializer(many=True)
+    class Meta:
+        model = PropertyType
+        fields = ['id','type_name','properties']
+
+
+
 class PublishingPaymentSerializer(serializers.ModelSerializer):
     landlord = serializers.StringRelatedField()
     property = serializers.StringRelatedField()
     class Meta:
         model = PublishingPayment
-        fields = ['property','landlord','payment_amount','payment_method','created_date']
+        fields = ['id','property','landlord','payment_amount','payment_method','created_date']
+        read_only_fields = ['property','landlord','created_date']
 
 class LandlordSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()
@@ -83,7 +95,8 @@ class LandlordSerializer(serializers.ModelSerializer):
     payments=PublishingPaymentSerializer(many=True)
     class Meta:
         model = Landlord
-        fields = ["user","gender","phone_number","province","district","sector","cell","profile_image",'properties','payments']
+        fields = ['id',"user","gender","phone_number","province","district","sector","cell","profile_image",'properties','payments']
+        read_only_fields = ['user']
 
 class GetInTouchSerializer(serializers.ModelSerializer):
     class Meta:

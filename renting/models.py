@@ -88,7 +88,7 @@ class PropertyType(models.Model):
 
 class Property(models.Model):
     landlord = models.ForeignKey(Landlord, verbose_name="Landlord", related_name='properties', on_delete=models.CASCADE)
-    property_type = models.ForeignKey(PropertyType, verbose_name="Property Type", on_delete=models.CASCADE)
+    property_type = models.ForeignKey(PropertyType, verbose_name="Property Type", related_name='properties', on_delete=models.CASCADE)
     title = models.CharField(verbose_name="Property Title", max_length=100)
     description = models.TextField(verbose_name="Property Description", blank=False)
     bedrooms = models.PositiveIntegerField(verbose_name="Bedrooms")

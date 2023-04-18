@@ -81,7 +81,7 @@ class PublishingPaymentViewSet(viewsets.ModelViewSet):
     queryset = PublishingPayment.objects.all()
     serializer_class = PublishingPaymentSerializer
     def get_queryset(self):
-        return self.queryset.filter(landlord=self.request.user.landlord)
+        return self.queryset.filter()
     def perform_create(self, serializer):
         serializer.save(landlord=self.request.user.landlord)
     def perform_update(self, serializer):
