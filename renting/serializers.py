@@ -95,10 +95,9 @@ class PublishingPaymentSerializer(serializers.ModelSerializer):
 class LandlordSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()
     properties=PropertySerializer(many=True)
-    payments=PublishingPaymentSerializer(many=True)
     class Meta:
         model = Landlord
-        fields = ['id',"user","gender","phone_number","profile_image",'properties','payments']
+        fields = ['id',"user","gender","phone_number","profile_image",'properties']
         read_only_fields = ['user']
 
 class GetInTouchSerializer(serializers.ModelSerializer):

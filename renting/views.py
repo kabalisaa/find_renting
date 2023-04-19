@@ -59,20 +59,7 @@ class PropertyTypeViewSet(viewsets.ModelViewSet):
 class PropertyViewSet(viewsets.ModelViewSet):
     queryset = Property.objects.all()
     serializer_class = PropertySerializer
-    def get_queryset(self):
-        return self.queryset.filter(landlord=self.request.user)
-    def perform_create(self, serializer):
-        serializer.save(landlord=self.request.user.landlord)
-    def perform_update(self, serializer):
-        obj = self.get_object()
-        if self.request.user.landlord!=obj.landlord:
-            raise PermissionDenied(
-                'You do not have permission to perform this action.'
-            )
-        serializer.save(landlord=self.request.user.landlord)
-    def perform_destroy(self, instance):
-        instance.delete()
-
+    
 class PropertyImagesViewSet(viewsets.ModelViewSet):
     queryset = PropertyImages.objects.all()
     serializer_class = PropertyImagesSerializer

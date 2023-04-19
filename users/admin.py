@@ -22,8 +22,8 @@ class UserAdmin(BaseUserAdmin):
     fieldsets = (
         ('User Credentials', {'fields': ('first_name', 'last_name', 'email', 'password')}),
         ('User type', {'fields': ('is_manager', 'is_landlord',)}),
-        ('Permissions', {'fields': (('is_active', 'is_staff','is_superuser'),'groups', 'user_permissions',)}),
-        ('Other Info', {'fields': (('date_joined', 'last_login'),)}),
+        ('Permissions', {'classes': ('collapse',),'fields': (('is_active', 'is_staff','is_superuser'),'groups', 'user_permissions',)}),
+        ('Other Info', {'classes': ('collapse',),'fields': (('date_joined', 'last_login'),)}),
     )
     # add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
     # overrides get_fieldsets to use this attribute when creating a user.

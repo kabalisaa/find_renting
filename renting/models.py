@@ -34,10 +34,10 @@ class Cell(models.Model):
 
 class UserLocation(models.Model):
     user = models.OneToOneField(User, verbose_name="User", related_name='location', on_delete=models.CASCADE)
-    province = models.ForeignKey(Province, verbose_name="Province", on_delete=models.PROTECT)
-    district = models.ForeignKey(District, verbose_name="District", on_delete=models.PROTECT)
-    sector = models.ForeignKey(Sector, verbose_name="Sector", on_delete=models.PROTECT)
-    cell = models.ForeignKey(Cell, verbose_name="Cell", on_delete=models.PROTECT)
+    province = models.ForeignKey(Province, verbose_name="Province", on_delete=models.PROTECT, blank=True, null=True)
+    district = models.ForeignKey(District, verbose_name="District", on_delete=models.PROTECT, blank=True, null=True)
+    sector = models.ForeignKey(Sector, verbose_name="Sector", on_delete=models.PROTECT, blank=True, null=True)
+    cell = models.ForeignKey(Cell, verbose_name="Cell", on_delete=models.PROTECT, blank=True, null=True)
     def __str__(self):
         return '{} {}'.format(self.user.first_name,self.user.last_name)
 
@@ -47,9 +47,9 @@ class Manager(models.Model):
         MALE = "Male", "Male"
         FEMALE = "Female", "Female"
 
-    user = models.OneToOneField(User, verbose_name="User", related_name='managers', on_delete=models.CASCADE)
+    user = models.OneToOneField(User, verbose_name="User", related_name='manager_profile', on_delete=models.CASCADE)
     gender = models.CharField(verbose_name="Gender", choices=Gender.choices, default=Gender.SELECT, max_length=10)
-    phone_number = PhoneNumberField(verbose_name = "Phone Number",blank=True, unique=True)
+    phone_number = PhoneNumberField(verbose_name = "Phone Number",blank=True,)
     profile_image = models.ImageField(
         verbose_name="Profile Picture", 
         upload_to='profile', 
@@ -68,9 +68,9 @@ class Landlord(models.Model):
         MALE = "Male", "Male"
         FEMALE = "Female", "Female"
 
-    user = models.OneToOneField(User, verbose_name="User", related_name='landlords', on_delete=models.CASCADE)
+    user = models.OneToOneField(User, verbose_name="User", related_name='landlord_profile', on_delete=models.CASCADE)
     gender = models.CharField(verbose_name="Gender", choices=Gender.choices, default=Gender.SELECT, max_length=10)
-    phone_number = PhoneNumberField(verbose_name = "Phone Number",blank=True, unique=True)
+    phone_number = PhoneNumberField(verbose_name = "Phone Number",blank=True,)
     profile_image = models.ImageField(
         verbose_name="Profile Picture", 
         upload_to='profile', 
