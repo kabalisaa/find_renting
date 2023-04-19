@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Province, District, Sector, Cell, Manager, Landlord, PropertyType, Property, PropertyImages, PublishingPayment, GetInTouch, Testimonial
+from .models import Province, District, Sector, Cell, UserLocation, Manager, Landlord, PropertyType, Property, PropertyImages, PublishingPayment, GetInTouch, Testimonial
 
 
 
@@ -36,14 +36,21 @@ class ProvinceSerializer(serializers.ModelSerializer):
         model = Province
         fields = ['id','province_name', 'districts',]
 
-class ManagerSerializer(serializers.ModelSerializer):
+class UserLocationSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()
     province = serializers.StringRelatedField()
     district = serializers.StringRelatedField()
     sector = serializers.StringRelatedField()
     class Meta:
+        model = UserLocation
+        fields = ['id','user','province','district','sector']
+        read_only_fields = ['user']
+
+class ManagerSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField()
+    class Meta:
         model = Manager
-        fields = ['id','user','gender','phone_number','province','district','sector','profile_image',]
+        fields = ['id','user','gender','phone_number','profile_image',]
         read_only_fields = ['user']
 
 
@@ -87,15 +94,11 @@ class PublishingPaymentSerializer(serializers.ModelSerializer):
 
 class LandlordSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()
-    province = serializers.StringRelatedField()
-    district = serializers.StringRelatedField()
-    sector = serializers.StringRelatedField()
-    cell =serializers.StringRelatedField()
     properties=PropertySerializer(many=True)
     payments=PublishingPaymentSerializer(many=True)
     class Meta:
         model = Landlord
-        fields = ['id',"user","gender","phone_number","province","district","sector","cell","profile_image",'properties','payments']
+        fields = ['id',"user","gender","phone_number","profile_image",'properties','payments']
         read_only_fields = ['user']
 
 class GetInTouchSerializer(serializers.ModelSerializer):

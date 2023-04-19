@@ -7,7 +7,7 @@ User = get_user_model()
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
-        fields = ["url","id", "first_name", "last_name","email","password"]
+        fields = ["url","id", "first_name", "last_name","email","is_manager","is_landlord","password"]
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
         return user

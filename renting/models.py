@@ -32,6 +32,15 @@ class Cell(models.Model):
     def __str__(self):
         return self.cell_name
 
+class UserLocation(models.Model):
+    user = models.OneToOneField(User, verbose_name="User", related_name='location', on_delete=models.CASCADE)
+    province = models.ForeignKey(Province, verbose_name="Province", on_delete=models.PROTECT)
+    district = models.ForeignKey(District, verbose_name="District", on_delete=models.PROTECT)
+    sector = models.ForeignKey(Sector, verbose_name="Sector", on_delete=models.PROTECT)
+    cell = models.ForeignKey(Cell, verbose_name="Cell", on_delete=models.PROTECT)
+    def __str__(self):
+        return '{} {}'.format(self.user.first_name,self.user.last_name)
+
 class Manager(models.Model):
     class Gender(models.TextChoices):
         SELECT = "", "Select Gender"
@@ -41,9 +50,6 @@ class Manager(models.Model):
     user = models.OneToOneField(User, verbose_name="User", related_name='managers', on_delete=models.CASCADE)
     gender = models.CharField(verbose_name="Gender", choices=Gender.choices, default=Gender.SELECT, max_length=10)
     phone_number = PhoneNumberField(verbose_name = "Phone Number",blank=True, unique=True)
-    province = models.ForeignKey(Province, verbose_name="Province", on_delete=models.PROTECT)
-    district = models.ForeignKey(District, verbose_name="District", on_delete=models.PROTECT)
-    sector = models.ForeignKey(Sector, verbose_name="Sector", on_delete=models.PROTECT)
     profile_image = models.ImageField(
         verbose_name="Profile Picture", 
         upload_to='profile', 
@@ -65,10 +71,6 @@ class Landlord(models.Model):
     user = models.OneToOneField(User, verbose_name="User", related_name='landlords', on_delete=models.CASCADE)
     gender = models.CharField(verbose_name="Gender", choices=Gender.choices, default=Gender.SELECT, max_length=10)
     phone_number = PhoneNumberField(verbose_name = "Phone Number",blank=True, unique=True)
-    province = models.ForeignKey(Province, verbose_name="Province", on_delete=models.PROTECT)
-    district = models.ForeignKey(District, verbose_name="District", on_delete=models.PROTECT)
-    sector = models.ForeignKey(Sector, verbose_name="Sector", on_delete=models.PROTECT)
-    cell = models.ForeignKey(Cell, verbose_name="Cell", on_delete=models.PROTECT)
     profile_image = models.ImageField(
         verbose_name="Profile Picture", 
         upload_to='profile', 

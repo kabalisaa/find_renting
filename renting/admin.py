@@ -3,39 +3,55 @@ from renting.models import *
 
 
 # Register your models here.
+@admin.register(UserLocation)
+class UserLocationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'province', 'district', 'sector','cell',)
+    list_filter = ('province', 'district',)
+    fieldsets = (
+        ('LANDLORD INFO', {'fields': ('user', 'province', 'district','sector','cell',)}),
+    )
+    add_fieldsets = (
+        ('REGISTER LANDLORD', {'fields': ('user', 'province', 'district','sector','cell',)}),
+    )
+    search_fields = ('user',)
+    ordering = ('user',)
+
+
 @admin.register(Manager)
 class ManagerAdmin(admin.ModelAdmin):
     list_display = ('user', 'gender', 'phone_number', 'image',)
     list_filter = ('gender',)
     fieldsets = (
         ('LANDLORD INFO', {'fields': ('user', 'gender', 'phone_number','profile_image',)}),
-        ('Location Address', {'fields': ('province', 'district', 'sector',)}),
     )
     add_fieldsets = (
         ('REGISTER LANDLORD', {'fields': ('user', 'gender', 'phone_number','profile_image',)}),
-        ('Location Address', {'fields': ('province', 'district', 'sector',)}),
     )
     search_fields = ('user',)
     ordering = ('user',)
 
 
-
+class PropertyInline(admin.TabularInline):
+    model = Property
+    extra = 0
 @admin.register(Landlord)
 class LandlordAdmin(admin.ModelAdmin):
     list_display = ('user', 'gender', 'phone_number', 'image',)
     list_filter = ('gender',)
     fieldsets = (
         ('LANDLORD INFO', {'fields': ('user', 'gender', 'phone_number','profile_image',)}),
-        ('Location Address', {'fields': ('province', 'district', 'sector', 'cell',)}),
     )
     add_fieldsets = (
         ('REGISTER LANDLORD', {'fields': ('user', 'gender', 'phone_number','profile_image',)}),
-        ('Location Address', {'fields': ('province', 'district', 'sector', 'cell',)}),
     )
     search_fields = ('user',)
     ordering = ('user',)
+    inlines = [PropertyInline]
 
 
+class PropertyInline(admin.TabularInline):
+    model = Property
+    extra = 0
 @admin.register(PropertyType)
 class PropertyTypeAdmin(admin.ModelAdmin):
     list_display = ('type_name',)
@@ -50,6 +66,7 @@ class PropertyTypeAdmin(admin.ModelAdmin):
     )
     search_fields = ('type_name',)
     ordering = ('type_name',)
+    inlines = [PropertyInline]
 
 
 
@@ -88,6 +105,10 @@ class PublishingPaymentAdmin(admin.ModelAdmin):
     search_fields = ('property', 'landlord', 'payment_method',)
     ordering = ('payment_method',)
 
+
+class DistrictInline(admin.TabularInline):
+    model = District
+    extra = 0
 @admin.register(Province)
 class ProvinceAdmin(admin.ModelAdmin):
     list_display = ('province_name',)
@@ -99,9 +120,13 @@ class ProvinceAdmin(admin.ModelAdmin):
     )
     search_fields = ('province_name',)
     ordering = ('province_name',)
+    inlines = [
+        DistrictInline,
+    ]
 
-
-
+class SectorInline(admin.TabularInline):
+    model = Sector
+    extra = 0
 @admin.register(District)
 class DistrictAdmin(admin.ModelAdmin):
     list_display = ('district_name','province',)
@@ -114,9 +139,14 @@ class DistrictAdmin(admin.ModelAdmin):
     )
     search_fields = ('province','district_name',)
     ordering = ('province',)
+    inlines = [
+        SectorInline,
+    ]
 
 
-
+class CellInline(admin.TabularInline):
+    model = Cell
+    extra = 0
 @admin.register(Sector)
 class SectorAdmin(admin.ModelAdmin):
     list_display = ('sector_name','district',)
@@ -129,6 +159,9 @@ class SectorAdmin(admin.ModelAdmin):
     )
     search_fields = ('district','sector_name',)
     ordering = ('district',)
+    inlines = [
+        CellInline,
+    ]
 
 
 
@@ -165,7 +198,7 @@ def get_app_list(self, request, app_label=None):
                 ordering = {
                     'Manager': 1,
                     'Landlord': 2,
-                    'City': 3,
+                    'UserLocation': 3,
                     'PropertyType': 4,
                     'Property': 5,
                     'PublishingPayment': 6,

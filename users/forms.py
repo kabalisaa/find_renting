@@ -16,7 +16,7 @@ class UserRegisterForm(forms.ModelForm):
         model = User
         fields = ['first_name','last_name','email',]
         
-    # EMAIL VARIDATION
+    # EMAIL VALIDATION
     def clean_email(self):
         if not email:
            raise forms.ValidationError("User email is required")
@@ -27,7 +27,7 @@ class UserRegisterForm(forms.ModelForm):
            raise forms.ValidationError("User email already exist!!!")
         return email
     
-    # PASSWORD VARIDATION
+    # PASSWORD VALIDATION
     def clean(self):
         cleaned_data = super().clean()
         pass1 = cleaned_data.get('password1')

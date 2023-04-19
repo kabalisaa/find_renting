@@ -9,8 +9,8 @@ User = get_user_model()
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     # include forms
-    add_form = UserRegisterForm
-    form = UserUpdateForm
+    # add_form = UserRegisterForm
+    # form = UserUpdateForm
     # change_password_form = UpdatePasswordForm
     
     # The fields to be used in displaying the User model.
