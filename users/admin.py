@@ -1,7 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+
+from renting.admin import UserLocationInline, LandlordInline, ManagerInline
 from . forms import UserRegisterForm, UserUpdateForm, UpdatePasswordForm
+
 
 User = get_user_model()
 
@@ -48,4 +51,4 @@ class UserAdmin(BaseUserAdmin):
     search_fields = ('email', 'first_name', 'last_name',)
     ordering = ('email','date_joined',)
     filter_horizontal = ('groups', 'user_permissions',)
-
+    inlines = [UserLocationInline,LandlordInline,ManagerInline]
