@@ -1,32 +1,21 @@
 from rest_framework import serializers
-from rest_framework_nested.serializers import NestedHyperlinkedModelSerializer
-# hyperlinks for nested relations on API
+# (needed only if you want hyperlinks for nested relations on API)
 from rest_framework_nested.relations import NestedHyperlinkedRelatedField
 
 from .models import Province, District, Sector, Cell, UserLocation, Manager, Landlord, PropertyType, Property, PropertyImages, PublishingPayment, GetInTouch, Testimonial
 
-
-class CellSerializer(NestedHyperlinkedModelSerializer):
+class CellSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Cell
         fields = ['url','id','cell_name']
 
-class SectorSerializer(NestedHyperlinkedModelSerializer):
-    parent_lookup_kwargs = {
-        'sector_pk': 'sector__pk',
-        'district_pk': 'sector__district__pk',
-        'province_pk': 'sector__district__province__pk',
-    }
+class SectorSerializer(serializers.HyperlinkedModelSerializer):
     cells=CellSerializer(many=True, read_only=True)
     class Meta:
         model = Sector
         fields = ['url','id','sector_name','cells']
 
-class DistrictSerializer(NestedHyperlinkedModelSerializer):
-    parent_lookup_kwargs = {
-        'district_pk': 'district__pk',
-        'province_pk': 'district__province__pk',
-    }
+class DistrictSerializer(serializers.HyperlinkedModelSerializer):
     province = serializers.StringRelatedField(read_only=True)
     sectors=SectorSerializer(many=True, read_only=True)
     class Meta:
@@ -57,21 +46,14 @@ class ManagerSerializer(serializers.HyperlinkedModelSerializer):
         read_only_fields = ['user']
 
 
-class PropertyImagesSerializer(NestedHyperlinkedModelSerializer):
-    parent_lookup_kwargs = {
-        'property_pk': 'property__pk',
-        'property_type_pk': 'property__property_type__pk',
-    }
+class PropertyImagesSerializer(serializers.HyperlinkedModelSerializer):
     property = serializers.StringRelatedField(read_only=True)
     class Meta:
         model = PropertyImages
         fields = ['url','id','property','property_image']
 
 
-class PropertySerializer(NestedHyperlinkedModelSerializer):
-    parent_lookup_kwargs = {
-        'property_type_pk': 'property_type__pk',
-    }
+class PropertySerializer(serializers.HyperlinkedModelSerializer):
     landlord = serializers.StringRelatedField(read_only=True)
     property_type=serializers.StringRelatedField()
     province = serializers.StringRelatedField()
@@ -103,11 +85,7 @@ class PropertySerializer(NestedHyperlinkedModelSerializer):
 
         return instance
 
-class PublishingPaymentSerializer(NestedHyperlinkedModelSerializer):
-    parent_lookup_kwargs = {
-        'property_pk': 'property__pk',
-        'property_type_pk': 'property__property_type__pk',
-    }
+class PublishingPaymentSerializer(serializers.HyperlinkedModelSerializer):
     landlord = serializers.StringRelatedField(read_only=True)
     property = serializers.StringRelatedField(read_only=True)
     class Meta:

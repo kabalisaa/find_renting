@@ -1,65 +1,36 @@
-from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-
 from .filters import DistrictFilter, SectorFilter, CellFilter
 from .models import (Province, District, Sector, Cell, Manager, Landlord, PropertyType, Property, PropertyImages, PublishingPayment, GetInTouch, Testimonial)
 from .serializers import (ProvinceSerializer, DistrictSerializer, SectorSerializer, CellSerializer, ManagerSerializer, LandlordSerializer, PropertyTypeSerializer, PropertySerializer, PropertyImagesSerializer, PublishingPaymentSerializer, GetInTouchSerializer, TestimonialSerializer)
 
-
-
 class ProvinceViewSet(viewsets.ModelViewSet):
+    queryset = Province.objects.all()
     serializer_class = ProvinceSerializer
 
-    def list(self, request,):
-        queryset = Province.objects.filter()
-        serializer = ProvinceSerializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def retrieve(self, request, pk=None):
-        queryset = Province.objects.filter()
-        province = get_object_or_404(queryset, pk=pk)
-        serializer = ProvinceSerializer(province)
-        return Response(serializer.data)
-
 class DistrictViewSet(viewsets.ModelViewSet):
+    queryset = District.objects.all()
     serializer_class = DistrictSerializer
-    # filter by district
     filter_backends = [DjangoFilterBackend]
     filterset_class = DistrictFilter
-    # .
-
-    def list(self, request, province_pk=None):
-        queryset = District.objects.filter(province=province_pk)
-        serializer = DistrictSerializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def retrieve(self, request, pk=None, province_pk=None):
-        queryset = District.objects.filter(pk=pk, province=province_pk)
-        district = get_object_or_404(queryset, pk=pk)
-        serializer = DistrictSerializer(district)
-        return Response(serializer.data)
 
 class SectorViewSet(viewsets.ModelViewSet):
+    queryset = Sector.objects.all()
     serializer_class = SectorSerializer
-    # filter by sector
     filter_backends = [DjangoFilterBackend]
     filterset_class = SectorFilter
-    # .
 
-    def list(self, request, province_pk=None, district_pk=None):
-        queryset = Sector.objects.filter(district__province=province_pk, district=district_pk)
-        serializer = SectorSerializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def retrieve(self, request, pk=None, province_pk=None, district_pk=None):
-        queryset = Sector.objects.filter(pk=pk, district=district_pk, district__province=province_pk)
-        sector = get_object_or_404(queryset, pk=pk)
-        serializer = SectorSerializer(sector)
+    def list(self, request, *args, **kwargs):
+        district_id = request.query_params.get('district')
+        if district_id:
+            queryset = self.queryset.filter(district_id=district_id)
+        else:
+            queryset = self.queryset
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
 
@@ -68,17 +39,14 @@ class CellViewSet(viewsets.ModelViewSet):
     serializer_class = CellSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = CellFilter
-    # .
 
-    def list(self, request, province_pk=None, district_pk=None, sector_pk=None):
-        queryset = Cell.objects.filter(sector__district__province=province_pk, sector__district=district_pk, sector=sector_pk)
-        serializer = SectorSerializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def retrieve(self, request, pk=None, province_pk=None, district_pk=None, sector_pk=None):
-        queryset = Cell.objects.filter(pk=pk, sector__district__province=province_pk, sector__district=district_pk, sector=sector_pk)
-        cell = get_object_or_404(queryset, pk=pk)
-        serializer = SectorSerializer(cell)
+    def list(self, request, *args, **kwargs):
+        sector_id = request.query_params.get('sector')
+        if sector_id:
+            queryset = self.queryset.filter(sector_id=sector_id)
+        else:
+            queryset = self.queryset
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
 class ManagerViewSet(viewsets.ModelViewSet):

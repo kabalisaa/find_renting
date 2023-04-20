@@ -15,6 +15,7 @@ django-filter = "*"
 djangorestframework-simplejwt = "*"
 social-auth-app-django = "*"
 drf-spectacular = {extras = ["sidecar"], version = "*"}
+drf-nested-routers = "*"
 
 [dev-packages]
 
