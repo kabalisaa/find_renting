@@ -41,10 +41,10 @@ class ManagerAdmin(admin.ModelAdmin):
     list_display = ('user', 'gender', 'phone_number', 'image',)
     list_filter = ('gender',)
     fieldsets = (
-        ('LANDLORD INFO', {'fields': ('user', 'gender', 'phone_number','profile_image',)}),
+        ('MANAGER INFO', {'fields': ('user', 'gender', 'phone_number','profile_image','image',)}),
     )
     add_fieldsets = (
-        ('REGISTER LANDLORD', {'fields': ('user', 'gender', 'phone_number','profile_image',)}),
+        ('REGISTER MANAGER', {'fields': ('user', 'gender', 'phone_number','profile_image','image',)}),
     )
     search_fields = ('user',)
     ordering = ('user',)
@@ -103,7 +103,7 @@ class PropertyAdmin(admin.ModelAdmin):
 
 @admin.register(PropertyImages)
 class PropertyImagesAdmin(admin.ModelAdmin):
-    list_display = ('property','rental_image',)
+    list_display = ('property','image',)
     list_filter = ('property',)
     fieldsets = (
         ('PROPERTY IMAGES', {'fields': ('property',)}),

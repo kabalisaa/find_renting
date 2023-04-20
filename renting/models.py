@@ -52,7 +52,7 @@ class Manager(models.Model):
     phone_number = PhoneNumberField(verbose_name = "Phone Number",blank=True,)
     profile_image = models.ImageField(
         verbose_name="Profile Picture", 
-        upload_to='profile', 
+        upload_to='profile/managers', 
         validators=[FileExtensionValidator(['png','jpg','jpeg'])]
     )
     def image(self):
@@ -73,7 +73,7 @@ class Landlord(models.Model):
     phone_number = PhoneNumberField(verbose_name = "Phone Number",blank=True,)
     profile_image = models.ImageField(
         verbose_name="Profile Picture", 
-        upload_to='profile', 
+        upload_to='profile/landlords', 
         validators=[FileExtensionValidator(['png','jpg','jpeg'])]
     )
     def image(self):
@@ -117,9 +117,9 @@ class PropertyImages(models.Model):
         upload_to='properties',
         validators=[FileExtensionValidator(['png','jpg','jpeg'])]
     )
-    def rental_image(self):
+    def image(self):
         return mark_safe('<img src="/../../media/%s" width="120" />' % (self.property_image))
-    rental_image.allow_tags = True
+    image.allow_tags = True
     def __str__(self):
         return '{} {}'.format(self.property, self.property_image)
 

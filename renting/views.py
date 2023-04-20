@@ -52,36 +52,36 @@ class CellViewSet(viewsets.ModelViewSet):
 class ManagerViewSet(viewsets.ModelViewSet):
     queryset = Manager.objects.all()
     serializer_class = ManagerSerializer
-    def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-    def perform_update(self, serializer):
-        obj = self.get_object()
-        if self.request.user!=obj.user:
-            raise PermissionDenied(
-                'You do not have permission to perform this action.'
-            )
-        serializer.save(user=self.request.user)
-    def perform_destroy(self, instance):
-        instance.delete()
+    # def get_queryset(self):
+    #     return self.queryset.filter(user=self.request.user)
+    # def perform_create(self, serializer):
+    #     serializer.save(user=self.request.user)
+    # def perform_update(self, serializer):
+    #     obj = self.get_object()
+    #     if self.request.user!=obj.user:
+    #         raise PermissionDenied(
+    #             'You do not have permission to perform this action.'
+    #         )
+    #     serializer.save(user=self.request.user)
+    # def perform_destroy(self, instance):
+    #     instance.delete()
 
 class LandlordViewSet(viewsets.ModelViewSet):
     queryset = Landlord.objects.all()
     serializer_class = LandlordSerializer
-    def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-    def perform_update(self, serializer):
-        obj = self.get_object()
-        if self.request.user!=obj.user:
-            raise PermissionDenied(
-                'You do not have permission to perform this action.'
-            )
-        serializer.save(user=self.request.user)
-    def perform_destroy(self, instance):
-        instance.delete()
+    # def get_queryset(self):
+    #     return self.queryset.filter(user=self.request.user)
+    # def perform_create(self, serializer):
+    #     serializer.save(user=self.request.user)
+    # def perform_update(self, serializer):
+    #     obj = self.get_object()
+    #     if self.request.user!=obj.user:
+    #         raise PermissionDenied(
+    #             'You do not have permission to perform this action.'
+    #         )
+    #     serializer.save(user=self.request.user)
+    # def perform_destroy(self, instance):
+    #     instance.delete()
 
 class PropertyTypeViewSet(viewsets.ModelViewSet):
     queryset = PropertyType.objects.all()
