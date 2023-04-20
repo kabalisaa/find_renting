@@ -1,4 +1,7 @@
-from rest_framework import viewsets
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import viewsets, filters
+
+from .filters import DistrictFilter, SectorFilter, CellFilter
 from .models import (Province, District, Sector, Cell, Manager, Landlord, PropertyType, Property, PropertyImages, PublishingPayment, GetInTouch, Testimonial)
 from .serializers import (ProvinceSerializer, DistrictSerializer, SectorSerializer, CellSerializer, ManagerSerializer, LandlordSerializer, PropertyTypeSerializer, PropertySerializer, PropertyImagesSerializer, PublishingPaymentSerializer, GetInTouchSerializer, TestimonialSerializer)
 
@@ -9,14 +12,39 @@ class ProvinceViewSet(viewsets.ModelViewSet):
 class DistrictViewSet(viewsets.ModelViewSet):
     queryset = District.objects.all()
     serializer_class = DistrictSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = DistrictFilter
 
 class SectorViewSet(viewsets.ModelViewSet):
     queryset = Sector.objects.all()
     serializer_class = SectorSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = SectorFilter
+
+    def list(self, request, *args, **kwargs):
+        district_id = request.query_params.get('district')
+        if district_id:
+            queryset = self.queryset.filter(district_id=district_id)
+        else:
+            queryset = self.queryset
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
 
 class CellViewSet(viewsets.ModelViewSet):
     queryset = Cell.objects.all()
     serializer_class = CellSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = CellFilter
+
+    def list(self, request, *args, **kwargs):
+        sector_id = request.query_params.get('sector')
+        if sector_id:
+            queryset = self.queryset.filter(sector_id=sector_id)
+        else:
+            queryset = self.queryset
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 class ManagerViewSet(viewsets.ModelViewSet):
     queryset = Manager.objects.all()
@@ -59,6 +87,10 @@ class PropertyTypeViewSet(viewsets.ModelViewSet):
 class PropertyViewSet(viewsets.ModelViewSet):
     queryset = Property.objects.all()
     serializer_class = PropertySerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['province', 'district', 'sector', 'cell']
+    search_fields = ['title', 'description']
+    ordering_fields = ['renting_price']
     
 class PropertyImagesViewSet(viewsets.ModelViewSet):
     queryset = PropertyImages.objects.all()
@@ -67,35 +99,11 @@ class PropertyImagesViewSet(viewsets.ModelViewSet):
 class PublishingPaymentViewSet(viewsets.ModelViewSet):
     queryset = PublishingPayment.objects.all()
     serializer_class = PublishingPaymentSerializer
-    def get_queryset(self):
-        return self.queryset.filter()
-    def perform_create(self, serializer):
-        serializer.save(landlord=self.request.user.landlord)
-    def perform_update(self, serializer):
-        serializer.save(landlord=self.request.user.landlord)
-    def perform_destroy(self, instance):
-        instance.delete()
 
 class GetInTouchViewSet(viewsets.ModelViewSet):
     queryset = GetInTouch.objects.all()
     serializer_class = GetInTouchSerializer
-    def get_queryset(self):
-        return self.queryset.filter()
-    def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
-    def perform_update(self, serializer):
-        serializer.save(created_by=self.request.user)
-    def perform_destroy(self, instance):
-        instance.delete()
 
 class TestimonialViewSet(viewsets.ModelViewSet):
     queryset = Testimonial.objects.all()
     serializer_class = TestimonialSerializer
-    def get_queryset(self):
-        return self.queryset.filter(is_confirmed=True)
-    def perform_create(self, serializer):
-        serializer.save()
-    def perform_update(self, serializer):
-        serializer.save()
-    def perform_destroy(self, instance):
-        instance.delete()

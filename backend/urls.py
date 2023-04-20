@@ -7,16 +7,16 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # path('api/', include('renting.urls')),
-    path('api/', include('users.urls')),
+    path('renting/', include('renting.urls')),
+    path('renting/', include('users.urls')),
     # path('api/auth/', include('djoser.urls')),
     # path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 
     # # Optional API:
-    # path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     # # Optional UI:
-    # path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    # path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
 ]
 
