@@ -1,5 +1,8 @@
 from django_filters.rest_framework import DjangoFilterBackend
+
 from rest_framework import viewsets, filters
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from .filters import DistrictFilter, SectorFilter, CellFilter
 from .models import (Province, District, Sector, Cell, Manager, Landlord, PropertyType, Property, PropertyImages, PublishingPayment, GetInTouch, Testimonial)
@@ -91,7 +94,35 @@ class PropertyViewSet(viewsets.ModelViewSet):
     filterset_fields = ['province', 'district', 'sector', 'cell']
     search_fields = ['title', 'description']
     ordering_fields = ['renting_price']
-    
+
+    @action(detail=True, methods=['get'])
+    def images(self, request, pk=None):
+        property_obj = self.get_object()
+        serializer = PropertyImagesSerializer(property_obj.images.all(), many=True)
+        return Response(serializer.data)
+
+    def perform_create(self, serializer):
+        serializer.save(landlord=self.request.user)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        province = self.request.query_params.get('province', None)
+        district = self.request.query_params.get('district', None)
+        sector = self.request.query_params.get('sector', None)
+        cell = self.request.query_params.get('cell', None)
+
+        if province:
+            queryset = queryset.filter(province=province)
+        if district:
+            queryset = queryset.filter(district=district)
+        if sector:
+            queryset = queryset.filter(sector=sector)
+        if cell:
+            queryset = queryset.filter(cell=cell)
+
+        return queryset
+
+
 class PropertyImagesViewSet(viewsets.ModelViewSet):
     queryset = PropertyImages.objects.all()
     serializer_class = PropertyImagesSerializer

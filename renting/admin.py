@@ -3,6 +3,25 @@ from renting.models import *
 
 
 # Register your models here.
+class LandlordInline(admin.StackedInline):
+    model = Landlord
+
+class ManagerInline(admin.StackedInline):
+    model = Manager
+
+class UserLocationInline(admin.StackedInline):
+    model = UserLocation
+
+class PropertyImageInline(admin.StackedInline):
+    model = PropertyImages
+    extra = 0
+
+class PropertyInline(admin.StackedInline):
+    model = Property
+    inlines = [PropertyImageInline]
+    extra = 0
+
+
 @admin.register(UserLocation)
 class UserLocationAdmin(admin.ModelAdmin):
     list_display = ('user', 'province', 'district', 'sector','cell',)
@@ -30,10 +49,6 @@ class ManagerAdmin(admin.ModelAdmin):
     search_fields = ('user',)
     ordering = ('user',)
 
-
-class PropertyInline(admin.TabularInline):
-    model = Property
-    extra = 0
 @admin.register(Landlord)
 class LandlordAdmin(admin.ModelAdmin):
     list_display = ('user', 'gender', 'phone_number', 'image',)
@@ -45,13 +60,10 @@ class LandlordAdmin(admin.ModelAdmin):
         ('REGISTER LANDLORD', {'fields': ('user', 'gender', 'phone_number','profile_image',)}),
     )
     search_fields = ('user',)
-    ordering = ('user',)
+    ordering = ('user__email',)
     inlines = [PropertyInline]
 
 
-class PropertyInline(admin.TabularInline):
-    model = Property
-    extra = 0
 @admin.register(PropertyType)
 class PropertyTypeAdmin(admin.ModelAdmin):
     list_display = ('type_name',)
@@ -86,7 +98,23 @@ class PropertyAdmin(admin.ModelAdmin):
     )
     search_fields = ('landlord','title',)
     ordering = ('property_type','district',)
+    inlines = [PropertyImageInline]
 
+
+@admin.register(PropertyImages)
+class PropertyImagesAdmin(admin.ModelAdmin):
+    list_display = ('property','rental_image',)
+    list_filter = ('property',)
+    fieldsets = (
+        ('PROPERTY IMAGES', {'fields': ('property',)}),
+        (None, {'fields': ('property_image',)}),
+    )
+    add_fieldsets = (
+        ('Property', {'fields': ('property',)}),
+        ('Image', {'fields': ('property_image',)}),
+    )
+    search_fields = ('property',)
+    ordering = ('property',)
 
 
 @admin.register(PublishingPayment)

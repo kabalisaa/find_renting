@@ -69,6 +69,25 @@ class PropertySerializer(serializers.ModelSerializer):
         model = Property
         fields = ['id','landlord','property_type','title','description','bedrooms','bathrooms','is_furnished','floors','plot_size','renting_price','status','status','province','district','sector','cell','street','pub_date','created_date','images']
 
+    def create(self, validated_data):
+        images_data = self.context.get('view').request.FILES
+        property_obj = Property.objects.create(**validated_data)
+        for image_data in images_data.values():
+            PropertyImages.objects.create(property=property_obj, image=image_data)
+        return property_obj
+
+    def update(self, instance, validated_data):
+        images_data = self.context.get('view').request.FILES
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if images_data:
+            instance.images.all().delete()
+            for image_data in images_data.values():
+                PropertyImages.objects.create(property=instance, image=image_data)
+
+        return instance
 
 
 class PublishingPaymentSerializer(serializers.ModelSerializer):

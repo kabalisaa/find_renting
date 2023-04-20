@@ -96,7 +96,7 @@ class Property(models.Model):
     bedrooms = models.PositiveIntegerField(verbose_name="Bedrooms")
     bathrooms = models.PositiveIntegerField(verbose_name="Bathrooms")
     is_furnished = models.BooleanField(verbose_name="Is furnished", default=False)
-    floors = models.PositiveIntegerField(verbose_name="Floors")
+    floors = models.PositiveIntegerField(verbose_name="Floors", null=True)
     plot_size = models.TextField(verbose_name="Plot Size")
     renting_price = models.DecimalField(verbose_name="Renting Price", max_digits=10, decimal_places=2)
     status = models.BooleanField(verbose_name="Available", default=True)
@@ -117,6 +117,9 @@ class PropertyImages(models.Model):
         upload_to='properties',
         validators=[FileExtensionValidator(['png','jpg','jpeg'])]
     )
+    def rental_image(self):
+        return mark_safe('<img src="/../../media/%s" width="120" />' % (self.property_image))
+    rental_image.allow_tags = True
     def __str__(self):
         return '{} {}'.format(self.property, self.property_image)
 
