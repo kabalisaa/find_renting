@@ -1,171 +1,194 @@
+from django.http import Http404
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework import viewsets, filters
 from rest_framework.decorators import action
+from rest_framework import viewsets, mixins, status
 from rest_framework.response import Response
 
+from .models import (
+    Manager, Landlord, Province, District, Sector, Cell,
+    PropertyType, Property, PropertyImages, PublishingPayment, GetInTouch, Testimonial
+)
+from .serializers import (
+    ManagerSerializer, LandlordSerializer, ProvinceSerializer, DistrictSerializer,
+    SectorSerializer, CellSerializer, PropertyTypeSerializer, PropertySerializer,
+    PropertyImagesSerializer, PublishingPaymentSerializer, GetInTouchSerializer,
+    TestimonialSerializer
+)
 
-from .filters import DistrictFilter, SectorFilter, CellFilter
-from .models import (Province, District, Sector, Cell, Manager, Landlord, PropertyType, Property, PropertyImages, PublishingPayment, GetInTouch, Testimonial)
-from .serializers import (ProvinceSerializer, DistrictSerializer, SectorSerializer, CellSerializer, ManagerSerializer, LandlordSerializer, PropertyTypeSerializer, PropertySerializer, PropertyImagesSerializer, PublishingPaymentSerializer, GetInTouchSerializer, TestimonialSerializer)
 
+class ManagerViewSet(viewsets.ModelViewSet):
+    queryset = Manager.objects.all()
+    serializer_class = ManagerSerializer
+
+
+class LandlordViewSet(viewsets.ModelViewSet):
+    queryset = Landlord.objects.all()
+    serializer_class = LandlordSerializer
 
 
 class ProvinceViewSet(viewsets.ModelViewSet):
     serializer_class = ProvinceSerializer
 
-    def list(self, request,):
-        queryset = Province.objects.filter()
-        serializer = ProvinceSerializer(queryset, many=True)
+    def get_queryset(self):
+        queryset = Province.objects.all()
+        province_pk = self.kwargs.get('province_pk')
+        if province_pk:
+            queryset = queryset.filter(pk=province_pk)
+
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    def retrieve(self, request, pk=None):
-        queryset = Province.objects.filter()
-        province = get_object_or_404(queryset, pk=pk)
-        serializer = ProvinceSerializer(province)
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
 class DistrictViewSet(viewsets.ModelViewSet):
     serializer_class = DistrictSerializer
-    # filter by district
-    filter_backends = [DjangoFilterBackend]
-    filterset_class = DistrictFilter
-    # .
 
-    def list(self, request, province_pk=None):
-        queryset = District.objects.filter(province=province_pk)
-        serializer = DistrictSerializer(queryset, many=True)
+    def get_queryset(self):
+        queryset = District.objects.all()
+        province_pk = self.kwargs.get('province_pk')
+        
+        if province_pk:
+            queryset = queryset.filter(province=province_pk)
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    def retrieve(self, request, pk=None, province_pk=None):
-        queryset = District.objects.filter(pk=pk, province=province_pk)
-        district = get_object_or_404(queryset, pk=pk)
-        serializer = DistrictSerializer(district)
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
 class SectorViewSet(viewsets.ModelViewSet):
     serializer_class = SectorSerializer
-    # filter by sector
-    filter_backends = [DjangoFilterBackend]
-    filterset_class = SectorFilter
-    # .
 
-    def list(self, request, province_pk=None, district_pk=None):
-        queryset = Sector.objects.filter(district__province=province_pk, district=district_pk)
-        serializer = SectorSerializer(queryset, many=True)
+    def get_queryset(self):
+        queryset = Sector.objects.all()
+        province_pk = self.kwargs.get('province_pk')
+        district_pk = self.kwargs.get('district_pk')
+        
+        if province_pk and district_pk:
+            queryset = queryset.filter(district__province__pk=province_pk, district__pk=district_pk)
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    def retrieve(self, request, pk=None, province_pk=None, district_pk=None):
-        queryset = Sector.objects.filter(pk=pk, district=district_pk, district__province=province_pk)
-        sector = get_object_or_404(queryset, pk=pk)
-        serializer = SectorSerializer(sector)
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
 
 class CellViewSet(viewsets.ModelViewSet):
-    queryset = Cell.objects.all()
     serializer_class = CellSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_class = CellFilter
-    # .
+    
+    def get_queryset(self):
+        queryset = Cell.objects.all()
+        province_pk = self.kwargs.get('province_pk')
+        district_pk = self.kwargs.get('district_pk')
+        sector_pk = self.kwargs.get('sector_pk')
 
-    def list(self, request, province_pk=None, district_pk=None, sector_pk=None):
-        queryset = Cell.objects.filter(sector__district__province=province_pk, sector__district=district_pk, sector=sector_pk)
-        serializer = SectorSerializer(queryset, many=True)
+        if province_pk and district_pk and sector_pk:
+            queryset = queryset.filter(sector__district__province_id=province_pk, 
+                                       sector__district_id=district_pk,
+                                       sector_id=sector_pk)
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    def retrieve(self, request, pk=None, province_pk=None, district_pk=None, sector_pk=None):
-        queryset = Cell.objects.filter(pk=pk, sector__district__province=province_pk, sector__district=district_pk, sector=sector_pk)
-        cell = get_object_or_404(queryset, pk=pk)
-        serializer = SectorSerializer(cell)
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
         return Response(serializer.data)
-
-class ManagerViewSet(viewsets.ModelViewSet):
-    queryset = Manager.objects.all()
-    serializer_class = ManagerSerializer
-    # def get_queryset(self):
-    #     return self.queryset.filter(user=self.request.user)
-    # def perform_create(self, serializer):
-    #     serializer.save(user=self.request.user)
-    # def perform_update(self, serializer):
-    #     obj = self.get_object()
-    #     if self.request.user!=obj.user:
-    #         raise PermissionDenied(
-    #             'You do not have permission to perform this action.'
-    #         )
-    #     serializer.save(user=self.request.user)
-    # def perform_destroy(self, instance):
-    #     instance.delete()
-
-class LandlordViewSet(viewsets.ModelViewSet):
-    queryset = Landlord.objects.all()
-    serializer_class = LandlordSerializer
-    # def get_queryset(self):
-    #     return self.queryset.filter(user=self.request.user)
-    # def perform_create(self, serializer):
-    #     serializer.save(user=self.request.user)
-    # def perform_update(self, serializer):
-    #     obj = self.get_object()
-    #     if self.request.user!=obj.user:
-    #         raise PermissionDenied(
-    #             'You do not have permission to perform this action.'
-    #         )
-    #     serializer.save(user=self.request.user)
-    # def perform_destroy(self, instance):
-    #     instance.delete()
 
 class PropertyTypeViewSet(viewsets.ModelViewSet):
     queryset = PropertyType.objects.all()
     serializer_class = PropertyTypeSerializer
 
+    def get_queryset(self):
+        if 'property_type_pk' in self.kwargs:
+            return Property.objects.filter(property_type_id=self.kwargs['property_type_pk'])
+        return self.queryset
+
+
 class PropertyViewSet(viewsets.ModelViewSet):
     queryset = Property.objects.all()
     serializer_class = PropertySerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['province', 'district', 'sector', 'cell']
-    search_fields = ['title', 'description']
-    ordering_fields = ['renting_price']
-
-    @action(detail=True, methods=['get'])
-    def images(self, request, pk=None):
-        property_obj = self.get_object()
-        serializer = PropertyImagesSerializer(property_obj.images.all(), many=True)
-        return Response(serializer.data)
-
-    def perform_create(self, serializer):
-        serializer.save(landlord=self.request.user)
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        province = self.request.query_params.get('province', None)
-        district = self.request.query_params.get('district', None)
-        sector = self.request.query_params.get('sector', None)
-        cell = self.request.query_params.get('cell', None)
+        if 'property_type_pk' in self.kwargs and 'property_pk' in self.kwargs:
+            return PropertyImages.objects.filter(property_id=self.kwargs['property_pk'])
+        elif 'property_type_pk' in self.kwargs:
+            return self.queryset.filter(property_type_id=self.kwargs['property_type_pk'])
+        return self.queryset
 
-        if province:
-            queryset = queryset.filter(province=province)
-        if district:
-            queryset = queryset.filter(district=district)
-        if sector:
-            queryset = queryset.filter(sector=sector)
-        if cell:
-            queryset = queryset.filter(cell=cell)
 
+class PropertyImagesViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
+                            mixins.RetrieveModelMixin, mixins.DestroyModelMixin,
+                            viewsets.GenericViewSet):
+
+    serializer_class = PropertyImagesSerializer
+
+    def get_queryset(self):
+        queryset = PropertyImages.objects.all()
+        property_pk = self.kwargs.get('property_pk')
+        property_type_pk = self.kwargs.get('property_type_pk')
+        if property_pk:
+            queryset = queryset.filter(property=property_pk)
+        elif property_type_pk:
+            queryset = queryset.filter(property__property_type=property_type_pk)
         return queryset
 
+    def perform_create(self, serializer):
+        property_pk = self.kwargs.get('property_pk')
+        property_type_pk = self.kwargs.get('property_type_pk')
+        if property_pk:
+            property_obj = get_object_or_404(Property, pk=property_pk)
+            serializer.save(property=property_obj)
+        elif property_type_pk:
+            property_type_obj = get_object_or_404(PropertyType, pk=property_type_pk)
+            serializer.save(property=property_type_obj.property_set.first())
 
-class PropertyImagesViewSet(viewsets.ModelViewSet):
-    queryset = PropertyImages.objects.all()
-    serializer_class = PropertyImagesSerializer
+    @action(detail=True, methods=['POST'])
+    def set_primary(self, request, pk=None, **kwargs):
+        instance = self.get_object()
+        instance.set_primary()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['POST'])
+    def unset_primary(self, request, pk=None, **kwargs):
+        instance = self.get_object()
+        instance.unset_primary()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
 
 class PublishingPaymentViewSet(viewsets.ModelViewSet):
     queryset = PublishingPayment.objects.all()
     serializer_class = PublishingPaymentSerializer
 
+
 class GetInTouchViewSet(viewsets.ModelViewSet):
     queryset = GetInTouch.objects.all()
     serializer_class = GetInTouchSerializer
+
 
 class TestimonialViewSet(viewsets.ModelViewSet):
     queryset = Testimonial.objects.all()
