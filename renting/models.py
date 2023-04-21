@@ -48,12 +48,13 @@ class Manager(models.Model):
         FEMALE = "Female", "Female"
 
     user = models.OneToOneField(User, verbose_name="User", related_name='manager_profile', on_delete=models.CASCADE)
-    gender = models.CharField(verbose_name="Gender", choices=Gender.choices, default=Gender.SELECT, max_length=10)
+    gender = models.CharField(verbose_name="Gender", choices=Gender.choices, default=Gender.SELECT, max_length=10, blank=True,)
     phone_number = PhoneNumberField(verbose_name = "Phone Number",blank=True,)
     profile_image = models.ImageField(
         verbose_name="Profile Picture", 
         upload_to='profile/managers', 
-        validators=[FileExtensionValidator(['png','jpg','jpeg'])]
+        validators=[FileExtensionValidator(['png','jpg','jpeg'])], 
+        blank=True,
     )
     def image(self):
         return mark_safe('<img src="/../../media/%s" width="70" />' % (self.profile_image))

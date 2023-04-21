@@ -19,10 +19,10 @@ from .views import (
 )
 
 router = routers.DefaultRouter()
-router.register(r'managers', ManagerViewSet)
-router.register(r'landlords', LandlordViewSet)
-router.register(r'get_in_touch', GetInTouchViewSet)
-router.register(r'testimonials', TestimonialViewSet)
+# router.register(r'managers', ManagerViewSet, basename='manager')
+# router.register(r'landlords', LandlordViewSet, basename='landlord')
+router.register(r'get_in_touch', GetInTouchViewSet, basename='messages')
+router.register(r'testimonials', TestimonialViewSet, basename='testimonial')
 
 # start location
 router.register(r'provinces', ProvinceViewSet, basename='province')

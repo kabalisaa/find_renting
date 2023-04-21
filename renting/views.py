@@ -18,13 +18,55 @@ from .serializers import (
 
 
 class ManagerViewSet(viewsets.ModelViewSet):
-    queryset = Manager.objects.all()
     serializer_class = ManagerSerializer
+
+    def get_queryset(self):
+        queryset = Manager.objects.all()
+        user_pk = self.kwargs.get('user_pk')
+        manager_pk = self.kwargs.get('manager_pk')
+
+        if user_pk:
+            queryset = queryset.filter(user__pk=user_pk)
+        elif user_pk and manager_pk:
+            queryset = queryset.filter(pk=manager_pk, 
+                                       user__pk=user_pk)
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 
 class LandlordViewSet(viewsets.ModelViewSet):
-    queryset = Landlord.objects.all()
     serializer_class = LandlordSerializer
+
+    def get_queryset(self):
+        queryset = Landlord.objects.all()
+        user_pk = self.kwargs.get('user_pk')
+        landlord_pk = self.kwargs.get('landlord_pk')
+
+        if user_pk:
+            queryset = queryset.filter(user__pk=user_pk)
+        elif user_pk and landlord_pk:
+            queryset = queryset.filter(pk=landlord_pk, 
+                                       user__pk=user_pk)
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 
 class ProvinceViewSet(viewsets.ModelViewSet):
@@ -33,9 +75,9 @@ class ProvinceViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Province.objects.all()
         province_pk = self.kwargs.get('province_pk')
+
         if province_pk:
             queryset = queryset.filter(pk=province_pk)
-
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -78,7 +120,8 @@ class SectorViewSet(viewsets.ModelViewSet):
         district_pk = self.kwargs.get('district_pk')
         
         if province_pk and district_pk:
-            queryset = queryset.filter(district__province__pk=province_pk, district__pk=district_pk)
+            queryset = queryset.filter(district__province__pk=province_pk, 
+                                       district__pk=district_pk)
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -128,15 +171,23 @@ class PropertyTypeViewSet(viewsets.ModelViewSet):
 
 
 class PropertyViewSet(viewsets.ModelViewSet):
-    queryset = Property.objects.all()
     serializer_class = PropertySerializer
-
+    
     def get_queryset(self):
-        if 'property_type_pk' in self.kwargs and 'property_pk' in self.kwargs:
-            return PropertyImages.objects.filter(property_id=self.kwargs['property_pk'])
-        elif 'property_type_pk' in self.kwargs:
-            return self.queryset.filter(property_type_id=self.kwargs['property_type_pk'])
-        return self.queryset
+        queryset = Property.objects.all()
+        property_type_pk = self.kwargs.get('property_type_pk')
+        property_pk = self.kwargs.get('property_pk')
+        landlord_pk = self.kwargs.get('landlord_pk')
+        user_pk = self.kwargs.get('user_pk')
+
+        if property_type_pk and property_pk:
+            queryset = queryset.filter(property__pk=property_pk, 
+                                       property__property_type__pk=property_type_pk)
+        elif user_pk and landlord_pk and property_pk:
+            queryset = queryset.filter(property__pk=property_pk, 
+                                       property__landlord__pk=landlord_pk, 
+                                       property__landlord__user__pk=user_pk)
+        return queryset
 
 
 class PropertyImagesViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
@@ -147,12 +198,17 @@ class PropertyImagesViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
 
     def get_queryset(self):
         queryset = PropertyImages.objects.all()
+        landlord_pk = self.kwargs.get('landlord_pk')
         property_pk = self.kwargs.get('property_pk')
         property_type_pk = self.kwargs.get('property_type_pk')
-        if property_pk:
-            queryset = queryset.filter(property=property_pk)
-        elif property_type_pk:
-            queryset = queryset.filter(property__property_type=property_type_pk)
+        user_pk = self.kwargs.get('user_pk')
+        if property_type_pk and property_pk:
+            queryset = queryset.filter(property__pk=property_pk, 
+                                       property__property_type__pk=property_type_pk)
+        elif user_pk and landlord_pk and property_pk:
+            queryset = queryset.filter(property__pk=property_pk, 
+                                       property__landlord__pk=landlord_pk, 
+                                       property__landlord__user__pk=user_pk)
         return queryset
 
     def perform_create(self, serializer):

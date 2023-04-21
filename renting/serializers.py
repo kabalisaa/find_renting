@@ -43,6 +43,10 @@ class ProvinceSerializer(serializers.HyperlinkedModelSerializer):
         fields = [ 'id', 'province_name', 'districts',]
 
 class UserLocationSerializer(serializers.ModelSerializer):
+    parent_lookup_kwargs = {
+        'location_pk': 'location__pk',
+        'user_pk': 'user__pk',
+    }
     user = serializers.StringRelatedField(read_only=True)
     province = serializers.StringRelatedField()
     district = serializers.StringRelatedField()
@@ -53,17 +57,27 @@ class UserLocationSerializer(serializers.ModelSerializer):
         read_only_fields = ['user']
 
 class ManagerSerializer(serializers.HyperlinkedModelSerializer):
+    parent_lookup_kwargs = {
+        'manager_pk': 'manager__pk',
+        'user_pk': 'user__pk',
+    }
     user = serializers.StringRelatedField(read_only=True)
     class Meta:
         model = Manager
         fields = ['id','user','gender','phone_number','profile_image',]
         read_only_fields = ['user']
+    
+    def update_or_create(self, *args, **kwargs):
+        manager = Manager.objects.update_or_create(*args, **kwargs)
+        return manager
 
 
 class PropertyImagesSerializer(NestedHyperlinkedModelSerializer):
     parent_lookup_kwargs = {
         'property_pk': 'property__pk',
         'property_type_pk': 'property__property_type__pk',
+        'landlord_pk': 'landlord__pk',
+        'user_pk': 'landlord__user__pk',
     }
     property = serializers.StringRelatedField(read_only=True)
     class Meta:
@@ -74,6 +88,8 @@ class PropertyImagesSerializer(NestedHyperlinkedModelSerializer):
 class PropertySerializer(NestedHyperlinkedModelSerializer):
     parent_lookup_kwargs = {
         'property_type_pk': 'property_type__pk',
+        'landlord_pk': 'landlord__pk',
+        'user_pk': 'landlord__user__pk',
     }
     landlord = serializers.StringRelatedField(read_only=True)
     property_type=serializers.StringRelatedField()
@@ -119,6 +135,10 @@ class PublishingPaymentSerializer(NestedHyperlinkedModelSerializer):
         # read_only_fields = ['property','landlord','created_date']
 
 class LandlordSerializer(serializers.HyperlinkedModelSerializer):
+    parent_lookup_kwargs = {
+        'landlord_pk': 'landlord__pk',
+        'user_pk': 'user__pk',
+    }
     user = serializers.StringRelatedField(read_only=True)
     properties=PropertySerializer(many=True, read_only=True)
     class Meta:

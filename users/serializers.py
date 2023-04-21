@@ -6,13 +6,13 @@ from renting.serializers import UserLocationSerializer, LandlordSerializer, Mana
 
 User = get_user_model()
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     location = UserLocationSerializer(read_only=True)
     landlord_profile = LandlordSerializer(read_only=True)
     manager_profile = ManagerSerializer(read_only=True)
     class Meta:
         model = User
-        fields = ["url","id", "first_name", "last_name","email","is_manager","is_landlord","password","manager_profile","landlord_profile","location"]
+        fields = ["id", "first_name", "last_name","email","is_manager","is_landlord","password","manager_profile","landlord_profile","location"]
         
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
