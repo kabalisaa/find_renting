@@ -7,15 +7,14 @@ name = "pypi"
 django = "*"
 djangorestframework = "*"
 pillow = "*"
-djoser = "*"
 mysqlclient = "*"
 django-phonenumber-field = {extras = ["phonenumbers"], version = "*"}
 markdown = "*"
 django-filter = "*"
-djangorestframework-simplejwt = "*"
-social-auth-app-django = "*"
 drf-spectacular = {extras = ["sidecar"], version = "*"}
 drf-nested-routers = "*"
+pyjwt = "*"
+django-cors-headers = "*"
 
 [dev-packages]
 

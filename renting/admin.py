@@ -84,6 +84,7 @@ class PropertyTypeAdmin(admin.ModelAdmin):
 
 @admin.register(Property)
 class PropertyAdmin(admin.ModelAdmin):
+    autocomplete_fields = ('property_type',)
     list_display = ('title','description','renting_price','bedrooms','bathrooms','floors','is_furnished', 'status', 'created_date',)
     list_filter = ('district','property_type','bedrooms','bathrooms','floors','is_furnished',)
     fieldsets = (
