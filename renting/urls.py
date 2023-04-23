@@ -8,8 +8,6 @@ from .views import (
     DistrictViewSet,
     SectorViewSet,
     CellViewSet,
-    ManagerViewSet,
-    LandlordViewSet,
     PropertyTypeViewSet,
     PropertyViewSet,
     PropertyImagesViewSet,
@@ -19,8 +17,6 @@ from .views import (
 )
 
 router = routers.DefaultRouter()
-# router.register(r'managers', ManagerViewSet, basename='manager')
-# router.register(r'landlords', LandlordViewSet, basename='landlord')
 router.register(r'get_in_touch', GetInTouchViewSet, basename='messages')
 router.register(r'testimonials', TestimonialViewSet, basename='testimonial')
 
