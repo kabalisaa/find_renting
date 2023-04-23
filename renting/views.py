@@ -17,7 +17,9 @@ from .serializers import (
 )
 
 
-class ManagerViewSet(viewsets.ModelViewSet):
+class ManagerViewSet(mixins.ListModelMixin, 
+                     mixins.RetrieveModelMixin,
+                      viewsets.GenericViewSet):
     serializer_class = ManagerSerializer
 
     def get_queryset(self):
@@ -43,7 +45,9 @@ class ManagerViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class LandlordViewSet(viewsets.ModelViewSet):
+class LandlordViewSet(mixins.ListModelMixin, 
+                      mixins.RetrieveModelMixin, 
+                      viewsets.GenericViewSet):
     serializer_class = LandlordSerializer
 
     def get_queryset(self):
@@ -69,16 +73,9 @@ class LandlordViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class ProvinceViewSet(viewsets.ModelViewSet):
+class ProvinceViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
     serializer_class = ProvinceSerializer
-
-    def get_queryset(self):
-        queryset = Province.objects.all()
-        province_pk = self.kwargs.get('province_pk')
-
-        if province_pk:
-            queryset = queryset.filter(pk=province_pk)
-        return queryset
+    queryset = Province.objects.all()
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -90,7 +87,7 @@ class ProvinceViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
-class DistrictViewSet(viewsets.ModelViewSet):
+class DistrictViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
     serializer_class = DistrictSerializer
 
     def get_queryset(self):
@@ -111,7 +108,7 @@ class DistrictViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
-class SectorViewSet(viewsets.ModelViewSet):
+class SectorViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
     serializer_class = SectorSerializer
 
     def get_queryset(self):
@@ -135,7 +132,7 @@ class SectorViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class CellViewSet(viewsets.ModelViewSet):
+class CellViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
     serializer_class = CellSerializer
     
     def get_queryset(self):
@@ -241,11 +238,14 @@ class PublishingPaymentViewSet(viewsets.ModelViewSet):
     serializer_class = PublishingPaymentSerializer
 
 
-class GetInTouchViewSet(viewsets.ModelViewSet):
+class GetInTouchViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin,
+                            viewsets.GenericViewSet):
     queryset = GetInTouch.objects.all()
     serializer_class = GetInTouchSerializer
 
 
-class TestimonialViewSet(viewsets.ModelViewSet):
+class TestimonialViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
+                            mixins.RetrieveModelMixin, mixins.DestroyModelMixin,
+                            viewsets.GenericViewSet):
     queryset = Testimonial.objects.all()
     serializer_class = TestimonialSerializer

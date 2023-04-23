@@ -211,7 +211,9 @@ class UserLogoutView(APIView):
         return response
 
 
-class UserLocationViewSet(viewsets.ModelViewSet):
+class UserLocationViewSet(mixins.ListModelMixin, 
+                          mixins.RetrieveModelMixin, 
+                          viewsets.GenericViewSet):
     serializer_class = UserLocationSerializer
     # queryset = UserLocation.objects.all()
 
