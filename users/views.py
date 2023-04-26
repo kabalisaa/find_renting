@@ -3,29 +3,29 @@ from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.core.mail import EmailMessage
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
-from rest_framework import status, viewsets, mixins
-from rest_framework.authentication import SessionAuthentication
+from rest_framework import status, viewsets, mixins, generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 import jwt
 from datetime import datetime, timedelta
-
-from .serializers import UserSerializer
+from .serializers import UserSerializer, LoginSerializer, UserPasswordResetSerializer, UserPasswordResetConfirmSerializer, UserLogoutSerializer
 from renting.serializers import UserLocationSerializer
 from renting.models import UserLocation
 
 User = get_user_model()
 
 
-class UserRegistrationView(APIView):
-    def post(self, request):
-        serializer = UserSerializer(data=request.data)
+class UserRegistrationView(generics.GenericAPIView):
+    serializer_class = UserSerializer
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             user_email = serializer.validated_data['email']
             if User.objects.filter(email=user_email).exists():
@@ -71,76 +71,92 @@ class UserActivateView(APIView):
             return Response({'message': 'Invalid activation link.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserPasswordResetView(APIView):
-    def post(self, request):
-        email = request.data.get('email')
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            return Response({'message': 'Email not found.'}, status=status.HTTP_404_NOT_FOUND)
+class UserPasswordResetView(generics.GenericAPIView):
+    serializer_class = UserPasswordResetSerializer
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            user = get_object_or_404(User, email=email)
 
-        # Send email with reset_password link
-        reset_password_link = reverse('password-reset-confirm', kwargs={
-            'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
-            'token': default_token_generator.make_token(user),
-        })
-        reset_password_url = request.build_absolute_uri(reset_password_link)
-        message = EmailMessage(
-            subject='Password Rest',
-            body=f'Please click on this link to reset your account password: {reset_password_url}',
-            to=[user.email],
-        )
-        message.send()
-        return Response({'message': 'Password reset email sent successfully.'}, status=status.HTTP_200_OK)
+            # Generate token and URL for password reset
+            token = default_token_generator.make_token(user)
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            password_reset_link = reverse('password-reset-confirm', kwargs={
+                'uidb64': uidb64,
+                'token': token,
+            })
+            password_reset_url = request.build_absolute_uri(password_reset_link)
+
+            # Send email with password reset link
+            message = EmailMessage(
+                subject='Password Reset Requested',
+                body=f'Please click on this link to reset your password: {password_reset_url}',
+                to=[email],
+            )
+            message.send()
+
+            return Response({'message': 'Password reset link has been sent to your email address.'}, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserPasswordResetConfirmView(APIView):
+
+class UserPasswordResetConfirmView(generics.GenericAPIView):
+    serializer_class = UserPasswordResetConfirmSerializer
+
     def post(self, request, uidb64, token):
-        try:
-            uid = urlsafe_base64_decode(uidb64).decode()
-            user = User.objects.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-            user = None
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                uid = urlsafe_base64_decode(uidb64).decode()
+                user = User.objects.get(pk=uid)
+            except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+                user = None
 
-        if user is not None and default_token_generator.check_token(user, token):
-            form = SetPasswordForm(user, request.data)
-            if form.is_valid():
-                form.save()
-                return Response({"message": "Password reset successfully."}, status=status.HTTP_200_OK)
+            if user is not None and default_token_generator.check_token(user, token):
+                form = SetPasswordForm(user, request.data)
+                if form.is_valid():
+                    form.save()
+                    return Response({"message": "Your password has been reset successfully."}, status=status.HTTP_200_OK)
+                else:
+                    return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
             else:
-                return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message": "Password reset link is invalid."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserLoginView(generics.GenericAPIView):
+    serializer_class = LoginSerializer
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            user = authenticate(
+                request,
+                email=serializer.validated_data['email'],
+                password=serializer.validated_data['password']
+            )
+            if user is not None:
+                login(request, user)
+                serializer = UserSerializer(user)
+                # Create JWT token
+                payload = {
+                    'user_id': user.pk,
+                    'exp': datetime.utcnow() + timedelta(days=1),
+                    'iat': datetime.utcnow(),
+                }
+                token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+                response = Response({'message': 'Login successful.'}, status=status.HTTP_200_OK)
+                response.set_cookie(key='jwt', value=token, httponly=True)
+                response.data = {
+                    'token': token,
+                    'user': serializer.data,
+                }
+                return response
+            else:
+                return Response({'message': 'Invalid credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
         else:
-            return Response({"message": "Password reset link is invalid."}, status=status.HTTP_400_BAD_REQUEST)
-
-
-class UserLoginView(APIView):
-    def post(self, request):
-        email = request.data.get('email')
-        password = request.data.get('password')
-        if email is None or password is None:
-            return Response({'error': 'Please provide both email and password.'}, status=status.HTTP_400_BAD_REQUEST)
-        user = authenticate(email=email, password=password)
-        if not user:
-            return Response({'error': 'Invalid credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
-        if not user.is_active:
-            return Response({'error': 'User account is not active.'}, status=status.HTTP_401_UNAUTHORIZED)
-        login(request, user)
-        serializer = UserSerializer(user)
-
-        # Create JWT token
-        payload = {
-            'user_id': user.pk,
-            'exp': datetime.utcnow() + timedelta(days=1),
-            'iat': datetime.utcnow(),
-        }
-        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-        response = Response(status=status.HTTP_200_OK)
-        response.set_cookie(key='jwt', value=token, httponly=True)
-        response.data = {
-            'token': token,
-            'user': serializer.data,
-        }
-        return response
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserViewSet(mixins.ListModelMixin, 
@@ -201,8 +217,9 @@ class UserViewSet(mixins.ListModelMixin,
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class UserLogoutView(APIView):
-    # permission_classes = [IsAuthenticated]
+class UserLogoutView(generics.GenericAPIView):
+    serializer_class = UserLogoutSerializer
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         # Logout the user by removing the session data
         logout(request)

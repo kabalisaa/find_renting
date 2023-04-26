@@ -32,6 +32,7 @@ SYSTEM_APPS=[
 
 THIRD_PARTY_APPS=[
     'rest_framework',
+    # 'drf-yasg',
     'whitenoise.runserver_nostatic',
     'phonenumber_field',
     'corsheaders',
@@ -87,14 +88,12 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-
-        # 'ENGINE': os.environ.get('ENGINE'),
-        # 'HOST': os.environ.get('HOST'),
-        # 'USER': os.environ.get('USER'),
-        # 'PASSWORD': os.environ.get('PASSWORD'),
-        # 'NAME': os.environ.get('NAME'),
+        'ENGINE': os.environ.get('ENGINE'),
+        'HOST': os.environ.get('HOST'),
+        'USER': os.environ.get('USER'),
+        'PASSWORD': os.environ.get('PASSWORD'),
+        'NAME': os.environ.get('NAME'),
+        'PORT': os.environ.get('PORT'),
         # "OPTIONS": {
         #     "init_command": "SET default_storage_engine=INNODB",
         # }

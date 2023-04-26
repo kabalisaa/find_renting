@@ -1,5 +1,9 @@
-from django.contrib.auth import get_user_model
+from datetime import datetime, timedelta
+from django.contrib.auth import get_user_model, authenticate, password_validation
+from django.conf import settings
 from django.utils.translation import gettext_lazy as _
+
+import jwt
 
 from rest_framework import serializers
 
@@ -39,3 +43,55 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
+
+    def validate(self, data):
+        email = data.get('email')
+        password = data.get('password')
+
+        if email and password:
+            user = authenticate(email=email, password=password)
+
+            if user:
+                if not user.is_active:
+                    raise serializers.ValidationError("User account is not active.")
+            else:
+                raise serializers.ValidationError("Unable to login with the given credentials.")
+        else:
+            raise serializers.ValidationError("Must provide email and password.")
+
+        data['user'] = user
+        return data
+
+
+class UserPasswordResetSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        try:
+            user = User.objects.get(email=value)
+        except User.DoesNotExist:
+            raise serializers.ValidationError('Invalid email address')
+
+        if not user.is_active:
+            raise serializers.ValidationError('User account is inactive')
+
+        return value
+
+
+
+class UserPasswordResetConfirmSerializer(serializers.Serializer):
+    new_password1 = serializers.CharField(max_length=128)
+    new_password2 = serializers.CharField(max_length=128)
+
+    def validate(self, data):
+        if data['new_password1'] != data['new_password2']:
+            raise serializers.ValidationError("Passwords do not match.")
+        return data
+
+
+class UserLogoutSerializer(serializers.Serializer):
+    pass
