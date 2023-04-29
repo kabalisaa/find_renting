@@ -228,11 +228,11 @@ class UserLogoutView(generics.GenericAPIView):
         return response
 
 
-class UserLocationViewSet(mixins.ListModelMixin, 
-                          mixins.RetrieveModelMixin, 
+class UserLocationViewSet(mixins.ListModelMixin,
+                          mixins.RetrieveModelMixin,
+                          mixins.UpdateModelMixin,
                           viewsets.GenericViewSet):
     serializer_class = UserLocationSerializer
-    # queryset = UserLocation.objects.all()
 
     def get_queryset(self):
         queryset = UserLocation.objects.all()
@@ -240,6 +240,15 @@ class UserLocationViewSet(mixins.ListModelMixin,
         location_pk = self.kwargs.get('location_pk')
 
         if user_pk and location_pk:
-            queryset = queryset.filter(user__pk=user_pk, 
-                                       pk=location_pk)
+            queryset = queryset.filter(user__pk=user_pk, pk=location_pk)
+        elif user_pk:
+            queryset = queryset.filter(user__pk=user_pk)
+
         return queryset
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)

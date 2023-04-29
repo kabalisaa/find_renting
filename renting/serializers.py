@@ -75,7 +75,6 @@ class ManagerSerializer(serializers.HyperlinkedModelSerializer):
 class PropertyImagesSerializer(NestedHyperlinkedModelSerializer):
     parent_lookup_kwargs = {
         'property_pk': 'property__pk',
-        'property_type_pk': 'property__property_type__pk',
         'landlord_pk': 'landlord__pk',
         'user_pk': 'landlord__user__pk',
     }
@@ -84,15 +83,18 @@ class PropertyImagesSerializer(NestedHyperlinkedModelSerializer):
         model = PropertyImages
         fields = ['id','property','property_image']
 
+class PropertyTypeSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = PropertyType
+        fields = [ 'id', 'type_name',]
 
 class PropertySerializer(NestedHyperlinkedModelSerializer):
     parent_lookup_kwargs = {
-        'property_type_pk': 'property_type__pk',
         'landlord_pk': 'landlord__pk',
         'user_pk': 'landlord__user__pk',
     }
     landlord = serializers.StringRelatedField(read_only=True)
-    property_type=serializers.StringRelatedField()
+    property_type=PropertyTypeSerializer()
     province = serializers.StringRelatedField()
     district = serializers.StringRelatedField()
     sector = serializers.StringRelatedField()
@@ -143,14 +145,8 @@ class LandlordSerializer(serializers.HyperlinkedModelSerializer):
     properties=PropertySerializer(many=True, read_only=True)
     class Meta:
         model = Landlord
-        fields = ['id',"user","gender","phone_number","profile_image",'properties']
+        fields = ['id',"user","gender","phone_number","profile_image","properties",]
         read_only_fields = ['user']
-
-class PropertyTypeSerializer(serializers.HyperlinkedModelSerializer):
-    properties = PropertySerializer(many=True, read_only=True)
-    class Meta:
-        model = PropertyType
-        fields = [ 'id', 'type_name', 'properties']
 
 class GetInTouchSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
@@ -162,3 +158,21 @@ class TestimonialSerializer(serializers.HyperlinkedModelSerializer):
         model = Testimonial
         fields = [ 'id', 'full_name', 'rating', 'message', 'is_confirmed', 'created_date']
         read_only_fields = ['id', 'created_date', 'is_confirmed']
+
+
+class RentalSearchSerializer(serializers.Serializer):
+    id = serializers.IntegerField(required=False,read_only=True)
+    landlord = LandlordSerializer(required=False,read_only=True)
+    property_type = serializers.CharField(required=False, allow_blank=True)
+    bedrooms = serializers.IntegerField(required=False)
+    bathrooms = serializers.IntegerField(required=False)
+    is_furnished = serializers.BooleanField(required=False)
+    floors = serializers.IntegerField(required=False)
+    renting_price = serializers.DecimalField(required=False, max_digits=10, decimal_places=2)
+    district = serializers.CharField(required=False, allow_blank=True)
+    sector = serializers.CharField(required=False, allow_blank=True)
+    cell = serializers.CharField(required=False, allow_blank=True)
+    images = PropertyImagesSerializer(many=True, read_only=True)
+    class Meta:
+        model = Property
+        fields = ['id','landlord','property_type','title','description','bedrooms','bathrooms','is_furnished','floors','plot_size','renting_price','status','province','district','sector','cell','street','images']
